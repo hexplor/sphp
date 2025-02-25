@@ -31,7 +31,16 @@ done
 # Enable the new PHP module in Apache
 sudo a2enmod php$PHP_VERSION
 
-# Restart Apache to apply changes
-sudo systemctl restart apache2
+# Disable the current PHP-FPM configuration
+for CONF in $(ls /etc/apache2/conf-enabled/php*-fpm.conf | sed 's/\.conf$//'); do
+    sudo a2disconf $(basename $CONF)
+done
 
-echo "Switched to PHP version $PHP_VERSION (CLI and Apache)"
+# Enable the new PHP-FPM configuration
+sudo a2enconf php$PHP_VERSION-fpm
+
+# Restart Apache and PHP-FPM to apply changes
+sudo systemctl restart apache2
+sudo systemctl restart php$PHP_VERSION-fpm
+
+echo "Switched to PHP version $PHP_VERSION (CLI, Apache, and FPM)"
